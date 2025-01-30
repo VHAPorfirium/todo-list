@@ -30,21 +30,17 @@ public class FilterTaskAuth extends OncePerRequestFilter {
 
             var authorization = request.getHeader("Authorization");
 
-            // Verifica se o header Authorization está presente e começa com "Basic "
             if (authorization == null || !authorization.startsWith("Basic ")) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing or invalid Authorization header");
                 return;
             }
 
-            // Remove "Basic " e decodifica a string Base64
             String user_password = authorization.substring("Basic".length()).trim();
             byte[] authDecode = Base64.getDecoder().decode(user_password);
             String authString = new String(authDecode);
 
-            // Divide credenciais em username e password
             String[] credentials = authString.split(":", 2);
 
-            // Garante que existem username e password
             if (credentials.length < 2) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid authentication format");
                 return;
@@ -53,34 +49,22 @@ public class FilterTaskAuth extends OncePerRequestFilter {
             String username = credentials[0];
             String password = credentials[1];
 
-            System.out.println("Authorization");
-            System.out.println(username);
-            System.out.println(password);
-
             var user = this.userRepository.findByUsername(username);
 
             if (user == null) {
                 response.sendError(401);
             } else {
-
-                // Validando senha
                 var passwordVerify = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
 
                 if (passwordVerify.verified) {
-
-                    // Continua a cadeia de filtros
+                    request.setAttribute("idUser", user.getId()); // Corrigido para "idUser"
                     filterChain.doFilter(request, response);
-
                 } else {
                     response.sendError(401);
                 }
-
             }
-
-        }
-        else {
+        } else {
             filterChain.doFilter(request, response);
         }
-
     }
 }
