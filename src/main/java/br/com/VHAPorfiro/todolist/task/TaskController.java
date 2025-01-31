@@ -83,7 +83,7 @@ public class TaskController {
 
         var taskUpadate = this.taskRepository.save(task);
 
-        return ResponseEntity.ok().body(this.taskRepository.save(taskUpadate));
+        return ResponseEntity.ok().body(taskUpadate);
 
     }
 }
